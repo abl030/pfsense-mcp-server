@@ -43,9 +43,9 @@ class QueryFilter:
 class SortOptions:
     """Represents sorting options for API requests"""
     sort_by: Optional[str] = None
-    sort_order: str = "asc"  # asc, desc
+    sort_order: str = "SORT_ASC"  # SORT_ASC, SORT_DESC (per pfSense API v2 docs)
     reverse: bool = False
-    
+
     def to_params(self) -> Dict[str, str]:
         """Convert to URL parameters"""
         params = {}
@@ -271,7 +271,7 @@ class EnhancedPfSenseAPIClient:
     ) -> Dict:
         """Get interfaces with advanced filtering and sorting"""
         return await self._make_request(
-            "GET", "/status/interface",
+            "GET", "/status/interfaces",
             filters=filters, sort=sort, pagination=pagination
         )
     
@@ -303,7 +303,7 @@ class EnhancedPfSenseAPIClient:
             filters.append(QueryFilter("interface", interface))
         
         return await self._make_request(
-            "GET", "/firewall/rule",
+            "GET", "/firewall/rules",
             filters=filters, sort=sort, pagination=pagination
         )
     
@@ -402,7 +402,7 @@ class EnhancedPfSenseAPIClient:
             filters.append(QueryFilter("type", alias_type))
         
         return await self._make_request(
-            "GET", "/firewall/alias",
+            "GET", "/firewall/aliases",
             filters=filters, sort=sort, pagination=pagination
         )
     
@@ -470,9 +470,9 @@ class EnhancedPfSenseAPIClient:
     ) -> Dict:
         """Get firewall logs with filtering"""
         pagination = PaginationOptions(limit=lines)
-        
+
         return await self._make_request(
-            "GET", "/diagnostics/log/firewall",
+            "GET", "/status/logs/firewall",
             filters=filters, sort=sort, pagination=pagination
         )
     
@@ -506,7 +506,7 @@ class EnhancedPfSenseAPIClient:
     ) -> Dict:
         """Get services with filtering"""
         return await self._make_request(
-            "GET", "/services",
+            "GET", "/status/services",
             filters=filters, sort=sort
         )
     
@@ -534,9 +534,9 @@ class EnhancedPfSenseAPIClient:
             filters = [QueryFilter("interface", interface)]
         elif interface and filters:
             filters.append(QueryFilter("interface", interface))
-        
+
         return await self._make_request(
-            "GET", "/services/dhcpd/lease",
+            "GET", "/status/dhcp_server/leases",
             filters=filters, sort=sort, pagination=pagination
         )
     
@@ -662,7 +662,7 @@ def create_default_sort(field: str, descending: bool = False) -> SortOptions:
     """Create default sort options"""
     return SortOptions(
         sort_by=field,
-        sort_order="desc" if descending else "asc"
+        sort_order="SORT_DESC" if descending else "SORT_ASC"
     )
 
 

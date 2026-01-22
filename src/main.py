@@ -1008,12 +1008,17 @@ async def test_enhanced_connection() -> Dict:
 
 # Main execution
 if __name__ == "__main__":
-    import uvicorn
-    
-    # Run the Enhanced FastMCP server
-    uvicorn.run(
-        "main_enhanced_mcp:mcp",
-        host=os.getenv("MCP_HOST", "0.0.0.0"),
-        port=int(os.getenv("MCP_PORT", "8000")),
-        reload=os.getenv("DEBUG", "false").lower() == "true"
-    )
+    mcp_mode = os.getenv("MCP_MODE", "stdio").lower()
+
+    if mcp_mode == "stdio":
+        # Run in stdio mode for Claude Code MCP integration
+        mcp.run(transport="stdio")
+    else:
+        # Run as HTTP server for standalone/testing
+        import uvicorn
+        uvicorn.run(
+            "main:mcp",
+            host=os.getenv("MCP_HOST", "0.0.0.0"),
+            port=int(os.getenv("MCP_PORT", "8000")),
+            reload=os.getenv("DEBUG", "false").lower() == "true"
+        )
