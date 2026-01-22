@@ -324,7 +324,7 @@ class EnhancedPfSenseAPIClient:
     
     async def get_rules_sorted_by_priority(self, interface: Optional[str] = None) -> Dict:
         """Get rules sorted by their order/priority"""
-        sort = SortOptions(sort_by="sequence", sort_order="asc")
+        sort = SortOptions(sort_by="sequence", sort_order="SORT_ASC")
         return await self.get_firewall_rules(interface=interface, sort=sort)
     
     async def create_firewall_rule(
@@ -482,18 +482,18 @@ class EnhancedPfSenseAPIClient:
         pagination = PaginationOptions(limit=lines)
         
         return await self.get_firewall_logs(
-            filters=filters, 
-            sort=SortOptions(sort_by="timestamp", sort_order="desc"),
+            filters=filters,
+            sort=SortOptions(sort_by="timestamp", sort_order="SORT_DESC"),
             lines=lines
         )
-    
+
     async def get_blocked_traffic_logs(self, lines: int = 100) -> Dict:
         """Get logs of blocked traffic"""
         filters = [QueryFilter("action", "block")]
-        
+
         return await self.get_firewall_logs(
             filters=filters,
-            sort=SortOptions(sort_by="timestamp", sort_order="desc"),
+            sort=SortOptions(sort_by="timestamp", sort_order="SORT_DESC"),
             lines=lines
         )
     
@@ -553,7 +553,7 @@ class EnhancedPfSenseAPIClient:
     async def get_active_leases(self) -> Dict:
         """Get only active DHCP leases"""
         filters = [QueryFilter("state", "active")]
-        sort = SortOptions(sort_by="start", sort_order="desc")
+        sort = SortOptions(sort_by="start", sort_order="SORT_DESC")
         return await self.get_dhcp_leases(filters=filters, sort=sort)
     
     # Object ID Management
