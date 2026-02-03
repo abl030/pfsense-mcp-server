@@ -408,11 +408,15 @@ class EnhancedPfSenseAPIClient:
         rule_id: int,
         apply_immediately: bool = True
     ) -> Dict:
-        """Delete firewall rule"""
+        """Delete firewall rule
+
+        Note: pfSense API v2 expects the ID in the request body, not the URL path.
+        """
         control = ControlParameters(apply=apply_immediately)
-        
+
         return await self._make_request(
-            "DELETE", f"/firewall/rule/{rule_id}",
+            "DELETE", "/firewall/rule",
+            data={"id": rule_id},
             control=control
         )
     
@@ -479,11 +483,15 @@ class EnhancedPfSenseAPIClient:
         port_forward_id: int,
         apply_immediately: bool = True
     ) -> Dict:
-        """Delete a NAT port forward rule"""
+        """Delete a NAT port forward rule
+
+        Note: pfSense API v2 expects the ID in the request body, not the URL path.
+        """
         control = ControlParameters(apply=apply_immediately)
 
         return await self._make_request(
-            "DELETE", f"/firewall/nat/port_forward/{port_forward_id}",
+            "DELETE", "/firewall/nat/port_forward",
+            data={"id": port_forward_id},
             control=control
         )
 

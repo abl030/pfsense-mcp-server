@@ -342,24 +342,24 @@ async def create_firewall_rule_advanced(
     client = get_api_client()
 
     # Build rule data using correct pfSense API v2 field names
-    # API expects src/dst as simple strings, not objects
+    # Note: interface must be an array, not a string
     rule_data = {
-        "interface": interface,
+        "interface": [interface],  # API expects array
         "type": rule_type,
         "ipprotocol": "inet",
         "protocol": protocol,
-        "src": source,  # pfSense API uses "src" not "source"
-        "dst": destination,  # pfSense API uses "dst" not "destination"
+        "source": source,
+        "destination": destination,
         "descr": description or f"Created via Enhanced MCP at {datetime.utcnow().isoformat()}",
         "log": log_matches,
         "disabled": disabled
     }
 
     if destination_port:
-        rule_data["dstport"] = destination_port  # pfSense API uses "dstport"
+        rule_data["destination_port"] = destination_port
 
     if source_port:
-        rule_data["srcport"] = source_port  # pfSense API uses "srcport"
+        rule_data["source_port"] = source_port
 
     # Set control parameters
     control = ControlParameters(
@@ -520,13 +520,14 @@ async def bulk_block_ips(
     for ip in ip_addresses:
         try:
             # Use correct pfSense API v2 field names
+            # Note: interface must be an array
             rule_data = {
-                "interface": interface,
+                "interface": [interface],  # API expects array
                 "type": "block",
                 "ipprotocol": "inet",
                 "protocol": "any",
-                "src": ip,  # pfSense API uses "src" not "source"
-                "dst": "any",  # pfSense API uses "dst" not "destination"
+                "source": ip,
+                "destination": "any",
                 "descr": f"{description_prefix}: {ip}",
                 "log": True
             }
