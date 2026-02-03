@@ -624,12 +624,13 @@ async def create_nat_port_forward(
     client = get_api_client()
 
     # Build port forward data using correct pfSense API v2 field names
+    # Per OpenAPI spec: source, destination, destination_port (not src, dst, dstport)
     port_forward_data = {
         "interface": interface,
         "protocol": protocol,
-        "src": source,
-        "dst": destination,
-        "dstport": destination_port,
+        "source": source,
+        "destination": destination,
+        "destination_port": destination_port,
         "target": target_ip,
         "local_port": target_port,
         "descr": description or f"Port forward created via MCP at {datetime.utcnow().isoformat()}",
@@ -878,6 +879,34 @@ async def manage_alias_addresses(
         }
     except Exception as e:
         logger.error(f"Failed to manage alias addresses: {e}")
+        return {"success": False, "error": str(e)}
+
+@mcp.tool()
+async def delete_alias(
+    alias_id: int,
+    apply_immediately: bool = True
+) -> Dict:
+    """Delete an alias
+
+    Args:
+        alias_id: ID of the alias to delete
+        apply_immediately: Whether to apply changes immediately
+    """
+    client = get_api_client()
+    try:
+        result = await client.delete_alias(alias_id, apply_immediately)
+
+        return {
+            "success": True,
+            "message": f"Alias {alias_id} deleted",
+            "alias_id": alias_id,
+            "applied": apply_immediately,
+            "result": result.get("data", result),
+            "links": client.extract_links(result),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to delete alias: {e}")
         return {"success": False, "error": str(e)}
 
 # Enhanced Log Analysis Tools

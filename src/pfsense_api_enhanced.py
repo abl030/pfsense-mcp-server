@@ -548,26 +548,49 @@ class EnhancedPfSenseAPIClient:
         alias_id: int,
         addresses: List[str]
     ) -> Dict:
-        """Add addresses to existing alias"""
+        """Add addresses to existing alias
+
+        Per OpenAPI spec: PATCH /firewall/alias with id in body, not URL path.
+        """
         control = ControlParameters(append=True, apply=True)
-        
+
         return await self._make_request(
-            "PATCH", f"/firewall/alias/{alias_id}",
-            data={"address": addresses},
+            "PATCH", "/firewall/alias",
+            data={"id": alias_id, "address": addresses},
             control=control
         )
-    
+
     async def remove_from_alias(
         self,
         alias_id: int,
         addresses: List[str]
     ) -> Dict:
-        """Remove addresses from existing alias"""
+        """Remove addresses from existing alias
+
+        Per OpenAPI spec: PATCH /firewall/alias with id in body, not URL path.
+        """
         control = ControlParameters(remove=True, apply=True)
-        
+
         return await self._make_request(
-            "PATCH", f"/firewall/alias/{alias_id}",
-            data={"address": addresses},
+            "PATCH", "/firewall/alias",
+            data={"id": alias_id, "address": addresses},
+            control=control
+        )
+
+    async def delete_alias(
+        self,
+        alias_id: int,
+        apply_immediately: bool = True
+    ) -> Dict:
+        """Delete an alias
+
+        Like firewall rules, uses body {"id": X} not query param.
+        """
+        control = ControlParameters(apply=apply_immediately)
+
+        return await self._make_request(
+            "DELETE", "/firewall/alias",
+            data={"id": alias_id},
             control=control
         )
     

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "pfsense": {
+      "command": "/home/abl030/nixosconfig/scripts/mcp-pfsense-dev.sh",
+      "env": {
+        "MCP_PFSENSE_DEV_DIR": "/home/abl030/pfsense-mcp-server"
+      }
+    }
+  }
+}
