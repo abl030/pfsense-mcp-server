@@ -250,6 +250,8 @@ class EnhancedPfSenseAPIClient:
         elif method.upper() == "PUT":
             response = await self.client.put(url, headers=headers, json=data)
         elif method.upper() == "DELETE":
+            # Note: OpenAPI spec says use query param ?id=X, but httpx DELETE
+            # with query params doesn't work (pfSense returns 400). Body works.
             response = await self.client.request("DELETE", url, headers=headers, json=data)
         else:
             raise ValueError(f"Unsupported HTTP method: {method}")
@@ -410,7 +412,7 @@ class EnhancedPfSenseAPIClient:
     ) -> Dict:
         """Delete firewall rule
 
-        Note: pfSense API v2 expects the ID in the request body, not the URL path.
+        Note: OpenAPI spec says query param, but body works more reliably with httpx.
         """
         control = ControlParameters(apply=apply_immediately)
 
@@ -485,7 +487,7 @@ class EnhancedPfSenseAPIClient:
     ) -> Dict:
         """Delete a NAT port forward rule
 
-        Note: pfSense API v2 expects the ID in the request body, not the URL path.
+        Note: OpenAPI spec says query param, but body works more reliably with httpx.
         """
         control = ControlParameters(apply=apply_immediately)
 
