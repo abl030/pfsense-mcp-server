@@ -317,49 +317,59 @@ async def create_firewall_rule_advanced(
     destination: str,
     description: Optional[str] = None,
     destination_port: Optional[str] = None,
+    source_port: Optional[str] = None,
     position: Optional[int] = None,
     apply_immediately: bool = True,
-    log_matches: bool = True
+    log_matches: bool = True,
+    disabled: bool = False
 ) -> Dict:
     """Create a firewall rule with advanced placement and control options
-    
+
     Args:
         interface: Interface for the rule (wan, lan, etc.)
         rule_type: Rule type (pass, block, reject)
         protocol: Protocol (tcp, udp, icmp, any)
-        source: Source address (any, IP, network, alias)
-        destination: Destination address (any, IP, network, alias)
+        source: Source address - use "any", IP address, CIDR (192.168.1.0/24), or alias name
+        destination: Destination address - use "any", IP address, CIDR, or alias name
         description: Optional rule description
-        destination_port: Optional destination port or range
+        destination_port: Optional destination port or range (e.g., "80" or "80:443")
+        source_port: Optional source port or range
         position: Optional position to insert rule (0 = top)
         apply_immediately: Whether to apply changes immediately
         log_matches: Whether to log rule matches
+        disabled: Whether to create the rule in disabled state
     """
     client = get_api_client()
-    
+
+    # Build rule data using correct pfSense API v2 field names
+    # API expects src/dst as simple strings, not objects
     rule_data = {
         "interface": interface,
         "type": rule_type,
         "ipprotocol": "inet",
         "protocol": protocol,
-        "source": source,
-        "destination": destination,
+        "src": source,  # pfSense API uses "src" not "source"
+        "dst": destination,  # pfSense API uses "dst" not "destination"
         "descr": description or f"Created via Enhanced MCP at {datetime.utcnow().isoformat()}",
-        "log": log_matches
+        "log": log_matches,
+        "disabled": disabled
     }
-    
+
     if destination_port:
-        rule_data["destination_port"] = destination_port
-    
+        rule_data["dstport"] = destination_port  # pfSense API uses "dstport"
+
+    if source_port:
+        rule_data["srcport"] = source_port  # pfSense API uses "srcport"
+
     # Set control parameters
     control = ControlParameters(
         apply=apply_immediately,
         placement=position
     )
-    
+
     try:
         result = await client.create_firewall_rule(rule_data, control)
-        
+
         return {
             "success": True,
             "message": "Firewall rule created with advanced options",
@@ -371,6 +381,90 @@ async def create_firewall_rule_advanced(
         }
     except Exception as e:
         logger.error(f"Failed to create advanced firewall rule: {e}")
+        return {"success": False, "error": str(e)}
+
+@mcp.tool()
+async def enable_firewall_rule(
+    rule_id: int,
+    apply_immediately: bool = True
+) -> Dict:
+    """Enable a disabled firewall rule
+
+    Args:
+        rule_id: ID of the rule to enable
+        apply_immediately: Whether to apply changes immediately
+    """
+    client = get_api_client()
+    try:
+        result = await client.enable_firewall_rule(rule_id, apply_immediately)
+
+        return {
+            "success": True,
+            "message": f"Firewall rule {rule_id} enabled",
+            "rule_id": rule_id,
+            "applied": apply_immediately,
+            "result": result.get("data", result),
+            "links": client.extract_links(result),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to enable firewall rule: {e}")
+        return {"success": False, "error": str(e)}
+
+@mcp.tool()
+async def disable_firewall_rule(
+    rule_id: int,
+    apply_immediately: bool = True
+) -> Dict:
+    """Disable a firewall rule without deleting it
+
+    Args:
+        rule_id: ID of the rule to disable
+        apply_immediately: Whether to apply changes immediately
+    """
+    client = get_api_client()
+    try:
+        result = await client.disable_firewall_rule(rule_id, apply_immediately)
+
+        return {
+            "success": True,
+            "message": f"Firewall rule {rule_id} disabled",
+            "rule_id": rule_id,
+            "applied": apply_immediately,
+            "result": result.get("data", result),
+            "links": client.extract_links(result),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to disable firewall rule: {e}")
+        return {"success": False, "error": str(e)}
+
+@mcp.tool()
+async def delete_firewall_rule(
+    rule_id: int,
+    apply_immediately: bool = True
+) -> Dict:
+    """Delete a firewall rule
+
+    Args:
+        rule_id: ID of the rule to delete
+        apply_immediately: Whether to apply changes immediately
+    """
+    client = get_api_client()
+    try:
+        result = await client.delete_firewall_rule(rule_id, apply_immediately)
+
+        return {
+            "success": True,
+            "message": f"Firewall rule {rule_id} deleted",
+            "rule_id": rule_id,
+            "applied": apply_immediately,
+            "result": result.get("data", result),
+            "links": client.extract_links(result),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to delete firewall rule: {e}")
         return {"success": False, "error": str(e)}
 
 @mcp.tool()
@@ -413,7 +507,7 @@ async def bulk_block_ips(
     description_prefix: str = "Bulk block via MCP"
 ) -> Dict:
     """Block multiple IP addresses at once
-    
+
     Args:
         ip_addresses: List of IP addresses to block
         interface: Interface to apply blocks on
@@ -422,29 +516,30 @@ async def bulk_block_ips(
     client = get_api_client()
     results = []
     errors = []
-    
+
     for ip in ip_addresses:
         try:
+            # Use correct pfSense API v2 field names
             rule_data = {
                 "interface": interface,
                 "type": "block",
                 "ipprotocol": "inet",
                 "protocol": "any",
-                "source": ip,
-                "destination": "any",
+                "src": ip,  # pfSense API uses "src" not "source"
+                "dst": "any",  # pfSense API uses "dst" not "destination"
                 "descr": f"{description_prefix}: {ip}",
                 "log": True
             }
-            
+
             # Don't apply immediately for bulk operations
             control = ControlParameters(apply=False)
             result = await client.create_firewall_rule(rule_data, control)
             results.append({"ip": ip, "success": True, "rule_id": result.get("data", {}).get("id")})
-            
+
         except Exception as e:
             logger.error(f"Failed to block IP {ip}: {e}")
             errors.append({"ip": ip, "error": str(e)})
-    
+
     # Apply all changes at once
     if results:
         try:
@@ -455,7 +550,7 @@ async def bulk_block_ips(
             logger.error(f"Failed to apply bulk changes: {e}")
     else:
         applied = False
-    
+
     return {
         "success": len(results) > 0,
         "total_requested": len(ip_addresses),
@@ -466,6 +561,181 @@ async def bulk_block_ips(
         "errors": errors,
         "timestamp": datetime.utcnow().isoformat()
     }
+
+# NAT Port Forward Tools
+
+@mcp.tool()
+async def list_nat_port_forwards(
+    page: int = 1,
+    page_size: int = 20
+) -> Dict:
+    """List all NAT port forward rules
+
+    Args:
+        page: Page number for pagination
+        page_size: Number of results per page
+    """
+    client = get_api_client()
+    try:
+        pagination = create_pagination(page, page_size)
+        result = await client.get_nat_port_forwards(pagination=pagination)
+
+        return {
+            "success": True,
+            "page": page,
+            "page_size": page_size,
+            "count": len(result.get("data", [])),
+            "port_forwards": result.get("data", []),
+            "links": client.extract_links(result),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to list NAT port forwards: {e}")
+        return {"success": False, "error": str(e)}
+
+@mcp.tool()
+async def create_nat_port_forward(
+    interface: str,
+    protocol: str,
+    destination_port: str,
+    target_ip: str,
+    target_port: str,
+    source: str = "any",
+    destination: str = "any",
+    description: Optional[str] = None,
+    apply_immediately: bool = True,
+    disabled: bool = False
+) -> Dict:
+    """Create a NAT port forward rule
+
+    Args:
+        interface: Interface to receive traffic (wan, lan, etc.)
+        protocol: Protocol (tcp, udp, tcp/udp)
+        destination_port: External port or range to forward (e.g., "80" or "8080:8090")
+        target_ip: Internal IP address to forward traffic to
+        target_port: Internal port to forward to
+        source: Source address filter (default "any") - can be IP, CIDR, or alias
+        destination: Destination address - typically "any" or interface address
+        description: Optional rule description
+        apply_immediately: Whether to apply changes immediately
+        disabled: Whether to create the rule in disabled state
+    """
+    client = get_api_client()
+
+    # Build port forward data using correct pfSense API v2 field names
+    port_forward_data = {
+        "interface": interface,
+        "protocol": protocol,
+        "src": source,
+        "dst": destination,
+        "dstport": destination_port,
+        "target": target_ip,
+        "local_port": target_port,
+        "descr": description or f"Port forward created via MCP at {datetime.utcnow().isoformat()}",
+        "disabled": disabled
+    }
+
+    control = ControlParameters(apply=apply_immediately)
+
+    try:
+        result = await client.create_nat_port_forward(port_forward_data, control)
+
+        return {
+            "success": True,
+            "message": "NAT port forward created",
+            "port_forward": result.get("data", result),
+            "applied_immediately": apply_immediately,
+            "links": client.extract_links(result),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to create NAT port forward: {e}")
+        return {"success": False, "error": str(e)}
+
+@mcp.tool()
+async def update_nat_port_forward(
+    port_forward_id: int,
+    target_ip: Optional[str] = None,
+    target_port: Optional[str] = None,
+    destination_port: Optional[str] = None,
+    description: Optional[str] = None,
+    disabled: Optional[bool] = None,
+    apply_immediately: bool = True
+) -> Dict:
+    """Update an existing NAT port forward rule
+
+    Args:
+        port_forward_id: ID of the port forward rule to update
+        target_ip: New internal IP address (optional)
+        target_port: New internal port (optional)
+        destination_port: New external port (optional)
+        description: New description (optional)
+        disabled: Enable/disable the rule (optional)
+        apply_immediately: Whether to apply changes immediately
+    """
+    client = get_api_client()
+
+    updates = {}
+    if target_ip is not None:
+        updates["target"] = target_ip
+    if target_port is not None:
+        updates["local_port"] = target_port
+    if destination_port is not None:
+        updates["dstport"] = destination_port
+    if description is not None:
+        updates["descr"] = description
+    if disabled is not None:
+        updates["disabled"] = disabled
+
+    if not updates:
+        return {"success": False, "error": "No updates provided"}
+
+    control = ControlParameters(apply=apply_immediately)
+
+    try:
+        result = await client.update_nat_port_forward(port_forward_id, updates, control)
+
+        return {
+            "success": True,
+            "message": f"NAT port forward {port_forward_id} updated",
+            "port_forward_id": port_forward_id,
+            "updates_applied": updates,
+            "applied_immediately": apply_immediately,
+            "result": result.get("data", result),
+            "links": client.extract_links(result),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to update NAT port forward: {e}")
+        return {"success": False, "error": str(e)}
+
+@mcp.tool()
+async def delete_nat_port_forward(
+    port_forward_id: int,
+    apply_immediately: bool = True
+) -> Dict:
+    """Delete a NAT port forward rule
+
+    Args:
+        port_forward_id: ID of the port forward rule to delete
+        apply_immediately: Whether to apply changes immediately
+    """
+    client = get_api_client()
+    try:
+        result = await client.delete_nat_port_forward(port_forward_id, apply_immediately)
+
+        return {
+            "success": True,
+            "message": f"NAT port forward {port_forward_id} deleted",
+            "port_forward_id": port_forward_id,
+            "applied": apply_immediately,
+            "result": result.get("data", result),
+            "links": client.extract_links(result),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to delete NAT port forward: {e}")
+        return {"success": False, "error": str(e)}
 
 # Enhanced Alias Tools
 
@@ -529,13 +799,56 @@ async def search_aliases(
         return {"success": False, "error": str(e)}
 
 @mcp.tool()
+async def create_alias(
+    name: str,
+    alias_type: str,
+    addresses: List[str],
+    description: Optional[str] = None,
+    apply_immediately: bool = True
+) -> Dict:
+    """Create a new alias
+
+    Args:
+        name: Unique name for the alias (no spaces, alphanumeric and underscore only)
+        alias_type: Type of alias - "host" (IPs), "network" (CIDRs), "port" (port numbers)
+        addresses: List of addresses/values for the alias
+        description: Optional description for the alias
+        apply_immediately: Whether to apply changes immediately
+    """
+    client = get_api_client()
+
+    alias_data = {
+        "name": name,
+        "type": alias_type,
+        "address": addresses,
+        "descr": description or f"Alias created via MCP at {datetime.utcnow().isoformat()}"
+    }
+
+    control = ControlParameters(apply=apply_immediately)
+
+    try:
+        result = await client.create_alias(alias_data, control)
+
+        return {
+            "success": True,
+            "message": f"Alias '{name}' created",
+            "alias": result.get("data", result),
+            "applied_immediately": apply_immediately,
+            "links": client.extract_links(result),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to create alias: {e}")
+        return {"success": False, "error": str(e)}
+
+@mcp.tool()
 async def manage_alias_addresses(
     alias_id: int,
     action: str,
     addresses: List[str]
 ) -> Dict:
     """Add or remove addresses from an existing alias
-    
+
     Args:
         alias_id: ID of the alias to modify
         action: Action to perform ('add' or 'remove')

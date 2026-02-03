@@ -332,13 +332,43 @@ class EnhancedPfSenseAPIClient:
         rule_data: Dict,
         control: Optional[ControlParameters] = None
     ) -> Dict:
-        """Create firewall rule with control parameters"""
+        """Create firewall rule with control parameters
+
+        Note: The pfSense API v2 expects src/dst as simple strings, not objects.
+        Valid values: IP address, CIDR, interface name, alias name, or "any"
+        """
         if not control:
             control = ControlParameters(apply=True)
-        
+
         return await self._make_request(
             "POST", "/firewall/rule",
             data=rule_data, control=control
+        )
+
+    async def enable_firewall_rule(
+        self,
+        rule_id: int,
+        apply_immediately: bool = True
+    ) -> Dict:
+        """Enable a firewall rule"""
+        control = ControlParameters(apply=apply_immediately)
+        return await self._make_request(
+            "PATCH", f"/firewall/rule/{rule_id}",
+            data={"disabled": False},
+            control=control
+        )
+
+    async def disable_firewall_rule(
+        self,
+        rule_id: int,
+        apply_immediately: bool = True
+    ) -> Dict:
+        """Disable a firewall rule"""
+        control = ControlParameters(apply=apply_immediately)
+        return await self._make_request(
+            "PATCH", f"/firewall/rule/{rule_id}",
+            data={"disabled": True},
+            control=control
         )
     
     async def update_firewall_rule(
@@ -386,8 +416,79 @@ class EnhancedPfSenseAPIClient:
             control=control
         )
     
+    # NAT Port Forward Methods
+
+    async def get_nat_port_forwards(
+        self,
+        filters: Optional[List[QueryFilter]] = None,
+        sort: Optional[SortOptions] = None,
+        pagination: Optional[PaginationOptions] = None
+    ) -> Dict:
+        """Get NAT port forward rules with filtering"""
+        return await self._make_request(
+            "GET", "/firewall/nat/port_forwards",
+            filters=filters, sort=sort, pagination=pagination
+        )
+
+    async def create_nat_port_forward(
+        self,
+        port_forward_data: Dict,
+        control: Optional[ControlParameters] = None
+    ) -> Dict:
+        """Create a NAT port forward rule
+
+        Required fields in port_forward_data:
+        - interface: Interface to receive traffic (e.g., "wan")
+        - protocol: Protocol (tcp, udp, tcp/udp)
+        - src: Source address (IP, CIDR, alias, or "any")
+        - dst: Destination address - typically interface address or "any"
+        - dstport: External port or port range (e.g., "80" or "80:443")
+        - target: Internal IP address to forward to
+        - local_port: Internal port to forward to
+
+        Optional fields:
+        - descr: Description
+        - disabled: Whether rule is disabled (default: false)
+        - nordr: No redirect (default: false)
+        """
+        if not control:
+            control = ControlParameters(apply=True)
+
+        return await self._make_request(
+            "POST", "/firewall/nat/port_forward",
+            data=port_forward_data, control=control
+        )
+
+    async def update_nat_port_forward(
+        self,
+        port_forward_id: int,
+        updates: Dict,
+        control: Optional[ControlParameters] = None
+    ) -> Dict:
+        """Update an existing NAT port forward rule"""
+        if not control:
+            control = ControlParameters(apply=True)
+
+        return await self._make_request(
+            "PATCH", f"/firewall/nat/port_forward/{port_forward_id}",
+            data=updates, control=control
+        )
+
+    async def delete_nat_port_forward(
+        self,
+        port_forward_id: int,
+        apply_immediately: bool = True
+    ) -> Dict:
+        """Delete a NAT port forward rule"""
+        control = ControlParameters(apply=apply_immediately)
+
+        return await self._make_request(
+            "DELETE", f"/firewall/nat/port_forward/{port_forward_id}",
+            control=control
+        )
+
     # Enhanced Alias Methods
-    
+
     async def get_aliases(
         self,
         alias_type: Optional[str] = None,
