@@ -49,7 +49,13 @@ Run `tests/test_openapi_validation.py` to validate our implementation matches th
 nix develop --command pytest tests/test_openapi_validation.py -v
 ```
 
-These tests catch:
+For programmatic scanning of field mismatches:
+
+```bash
+python scripts/validate_against_spec.py
+```
+
+These tests/scripts catch:
 - Wrong field types (e.g., `interface` should be array not string)
 - Wrong field names (e.g., `source` not `src`)
 - Missing required fields
@@ -117,7 +123,10 @@ The flake.nix shellHook exports `PFSENSE_URL` from `PFSENSE_HOST`.
 
 **Critical - wrong format = 400/404 errors:**
 
-1. **`interface` must be array**: `["lan"]` not `"lan"`
+1. **`interface` field differs by schema**:
+   - **FirewallRule**: `["lan"]` (array)
+   - **PortForward**: `"lan"` (string)
+   - Always check OpenAPI spec for the specific schema
 
 2. **Field names** (check OpenAPI spec for others):
    - `source` / `destination` (not `src` / `dst`)
