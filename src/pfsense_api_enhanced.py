@@ -92,7 +92,10 @@ class ControlParameters:
             params["remove"] = "true"
         return params
 
-class EnhancedPfSenseAPIClient:
+from generated_client import GeneratedFirewallMixin
+
+
+class EnhancedPfSenseAPIClient(GeneratedFirewallMixin):
     """
     Enhanced pfSense API v2 Client with advanced features
     """

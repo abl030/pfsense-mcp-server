@@ -1348,6 +1348,13 @@ async def test_enhanced_connection() -> Dict:
         logger.error(f"Enhanced connection test failed: {e}")
         return {"success": False, "error": str(e)}
 
+# Register generated tools for additional firewall endpoints
+try:
+    from .generated_tools import register_generated_tools
+except ImportError:
+    from generated_tools import register_generated_tools
+register_generated_tools(mcp, get_api_client)
+
 # Main execution
 if __name__ == "__main__":
     mcp_mode = os.getenv("MCP_MODE", "stdio").lower()
