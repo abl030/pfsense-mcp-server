@@ -412,3 +412,160 @@ class GeneratedFirewallMixin:
     async def apply_firewall_apply(self):
         """Trigger firewall apply."""
         return await self._make_request("POST", "/firewall/apply")
+    async def get_routing_gateways(self, filters=None, sort=None, pagination=None):
+        """List routing gateways."""
+        return await self._make_request(
+            "GET", "/routing/gateways",
+            filters=filters, sort=sort, pagination=pagination,
+        )
+
+    async def create_routing_gateway(self, data, control=None):
+        """Create a routing gateway."""
+        from pfsense_api_enhanced import ControlParameters
+        if not control:
+            control = ControlParameters(apply=True)
+        return await self._make_request(
+            "POST", "/routing/gateway",
+            data=data, control=control,
+        )
+
+    async def update_routing_gateway(self, item_id, updates, control=None):
+        """Update a routing gateway."""
+        from pfsense_api_enhanced import ControlParameters
+        if not control:
+            control = ControlParameters(apply=True)
+        return await self._make_request(
+            "PATCH", "/routing/gateway",
+            data={"id": item_id, **updates}, control=control,
+        )
+
+    async def delete_routing_gateway(self, item_id, apply_immediately=True):
+        """Delete a routing gateway."""
+        from pfsense_api_enhanced import ControlParameters
+        control = ControlParameters(apply=apply_immediately)
+        return await self._make_request(
+            "DELETE", "/routing/gateway",
+            data={"id": item_id}, control=control,
+        )
+    async def get_routing_gateway_default(self):
+        """Get default routing gateway."""
+        return await self._make_request("GET", "/routing/gateway/default")
+
+    async def update_routing_gateway_default(self, updates):
+        """Update default routing gateway."""
+        return await self._make_request(
+            "PATCH", "/routing/gateway/default",
+            data=updates,
+        )
+    async def get_routing_gateway_groups(self, filters=None, sort=None, pagination=None):
+        """List routing gateway groups."""
+        return await self._make_request(
+            "GET", "/routing/gateway/groups",
+            filters=filters, sort=sort, pagination=pagination,
+        )
+
+    async def create_routing_gateway_group(self, data, control=None):
+        """Create a routing gateway group."""
+        from pfsense_api_enhanced import ControlParameters
+        if not control:
+            control = ControlParameters(apply=True)
+        return await self._make_request(
+            "POST", "/routing/gateway/group",
+            data=data, control=control,
+        )
+
+    async def update_routing_gateway_group(self, item_id, updates, control=None):
+        """Update a routing gateway group."""
+        from pfsense_api_enhanced import ControlParameters
+        if not control:
+            control = ControlParameters(apply=True)
+        return await self._make_request(
+            "PATCH", "/routing/gateway/group",
+            data={"id": item_id, **updates}, control=control,
+        )
+
+    async def delete_routing_gateway_group(self, item_id, apply_immediately=True):
+        """Delete a routing gateway group."""
+        from pfsense_api_enhanced import ControlParameters
+        control = ControlParameters(apply=apply_immediately)
+        return await self._make_request(
+            "DELETE", "/routing/gateway/group",
+            data={"id": item_id}, control=control,
+        )
+    async def get_routing_gateway_group_prioritys(self, filters=None, sort=None, pagination=None):
+        """List routing gateway group prioritys."""
+        return await self._make_request(
+            "GET", "/routing/gateway/group/priorities",
+            filters=filters, sort=sort, pagination=pagination,
+        )
+
+    async def create_routing_gateway_group_priority(self, data, control=None):
+        """Create a routing gateway group priority. Include 'parent_id' in data."""
+        from pfsense_api_enhanced import ControlParameters
+        if not control:
+            control = ControlParameters(apply=True)
+        return await self._make_request(
+            "POST", "/routing/gateway/group/priority",
+            data=data, control=control,
+        )
+
+    async def update_routing_gateway_group_priority(self, item_id, updates, control=None):
+        """Update a routing gateway group priority."""
+        from pfsense_api_enhanced import ControlParameters
+        if not control:
+            control = ControlParameters(apply=True)
+        return await self._make_request(
+            "PATCH", "/routing/gateway/group/priority",
+            data={"id": item_id, **updates}, control=control,
+        )
+
+    async def delete_routing_gateway_group_priority(self, item_id, apply_immediately=True):
+        """Delete a routing gateway group priority."""
+        from pfsense_api_enhanced import ControlParameters
+        control = ControlParameters(apply=apply_immediately)
+        return await self._make_request(
+            "DELETE", "/routing/gateway/group/priority",
+            data={"id": item_id}, control=control,
+        )
+    async def get_routing_static_routes(self, filters=None, sort=None, pagination=None):
+        """List static routes."""
+        return await self._make_request(
+            "GET", "/routing/static_routes",
+            filters=filters, sort=sort, pagination=pagination,
+        )
+
+    async def create_routing_static_route(self, data, control=None):
+        """Create a static route."""
+        from pfsense_api_enhanced import ControlParameters
+        if not control:
+            control = ControlParameters(apply=True)
+        return await self._make_request(
+            "POST", "/routing/static_route",
+            data=data, control=control,
+        )
+
+    async def update_routing_static_route(self, item_id, updates, control=None):
+        """Update a static route."""
+        from pfsense_api_enhanced import ControlParameters
+        if not control:
+            control = ControlParameters(apply=True)
+        return await self._make_request(
+            "PATCH", "/routing/static_route",
+            data={"id": item_id, **updates}, control=control,
+        )
+
+    async def delete_routing_static_route(self, item_id, apply_immediately=True):
+        """Delete a static route."""
+        from pfsense_api_enhanced import ControlParameters
+        control = ControlParameters(apply=apply_immediately)
+        return await self._make_request(
+            "DELETE", "/routing/static_route",
+            data={"id": item_id}, control=control,
+        )
+    async def get_routing_apply_status(self):
+        """Get routing apply status."""
+        return await self._make_request("GET", "/routing/apply")
+
+    async def apply_routing_apply(self):
+        """Trigger routing apply."""
+        return await self._make_request("POST", "/routing/apply")

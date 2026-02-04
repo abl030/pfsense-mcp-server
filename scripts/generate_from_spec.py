@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Code generator for pfSense MCP server firewall endpoints.
+Code generator for pfSense MCP server endpoints.
 
-Reads the OpenAPI spec and generates:
+Reads endpoint configurations and generates:
   - src/generated_client.py   (mixin class with client methods)
   - src/generated_tools.py    (MCP tool registrations)
   - tests/test_generated_integration.py  (integration tests)
@@ -310,6 +310,104 @@ ENDPOINTS = [
         category="action",
         python_name="firewall_apply",
         display_name="firewall apply",
+        http_methods=["GET", "POST"],
+    ),
+
+    # ===================================================================
+    # Routing endpoints
+    # ===================================================================
+
+    # ---- Routing gateways ----
+    EndpointConfig(
+        singular_path="/routing/gateway",
+        plural_path="/routing/gateways",
+        schema_name="RoutingGateway",
+        category="crud",
+        python_name="routing_gateway",
+        display_name="routing gateway",
+        http_methods=["GET", "POST", "PATCH", "DELETE"],
+        descr_field="descr",
+        lookup_field="name",
+        test_create_data={
+            "name": "",  # filled at test time
+            "ipprotocol": "inet",
+            "interface": "wan",
+            "gateway": "198.51.100.254",
+        },
+        test_update_data={"descr": "Updated gateway"},
+    ),
+    EndpointConfig(
+        singular_path="/routing/gateway/default",
+        plural_path=None,
+        schema_name="RoutingGatewayDefault",
+        category="settings",
+        python_name="routing_gateway_default",
+        display_name="default routing gateway",
+        http_methods=["GET", "PATCH"],
+    ),
+    # ---- Routing gateway groups ----
+    EndpointConfig(
+        singular_path="/routing/gateway/group",
+        plural_path="/routing/gateway/groups",
+        schema_name="RoutingGatewayGroup",
+        category="crud",
+        python_name="routing_gateway_group",
+        display_name="routing gateway group",
+        http_methods=["GET", "POST", "PATCH", "DELETE"],
+        descr_field="descr",
+        lookup_field="name",
+        test_create_data={
+            "name": "",  # filled at test time
+            "trigger": "down",
+            "descr": "",
+            "ipprotocol": "inet",
+            "priorities": [],
+        },
+        test_update_data={"descr": "Updated gateway group"},
+    ),
+    EndpointConfig(
+        singular_path="/routing/gateway/group/priority",
+        plural_path="/routing/gateway/group/priorities",
+        schema_name="RoutingGatewayGroupPriority",
+        category="nested_crud",
+        python_name="routing_gateway_group_priority",
+        display_name="routing gateway group priority",
+        http_methods=["GET", "POST", "PATCH", "DELETE"],
+        has_parent_id=True,
+        parent_python_name="routing_gateway_group",
+        descr_field=None,
+        lookup_field=None,
+        test_create_data={
+            "gateway": "WAN_DHCP",
+            "tier": 1,
+        },
+        test_update_data={"tier": 2},
+    ),
+    # ---- Static routes ----
+    EndpointConfig(
+        singular_path="/routing/static_route",
+        plural_path="/routing/static_routes",
+        schema_name="StaticRoute",
+        category="crud",
+        python_name="routing_static_route",
+        display_name="static route",
+        http_methods=["GET", "POST", "PATCH", "DELETE"],
+        descr_field="descr",
+        lookup_field="descr",
+        test_create_data={
+            "network": "10.99.99.0/24",
+            "gateway": "WAN_DHCP",
+        },
+        test_update_data={"descr": "Updated route"},
+    ),
+    # ---- Routing apply ----
+    EndpointConfig(
+        singular_path="/routing/apply",
+        plural_path=None,
+        schema_name="RoutingApply",
+        category="action",
+        python_name="routing_apply",
+        display_name="routing apply",
         http_methods=["GET", "POST"],
     ),
 ]

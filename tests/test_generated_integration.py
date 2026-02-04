@@ -385,3 +385,173 @@ class TestFirewallApplyReadOnly:
     async def test_get_firewall_apply_status(self, api_client):
         result = await api_client.get_firewall_apply_status()
         assert "data" in result
+
+
+class TestRoutingGatewayReadOnly:
+    """Read-only tests for routing gateway."""
+
+    async def test_get_routing_gateways(self, api_client):
+        result = await api_client.get_routing_gateways()
+        assert "data" in result
+
+
+class TestRoutingGatewayLifecycle:
+    """CRUD lifecycle test for routing gateway."""
+
+    async def test_crud_lifecycle(self, api_client, unique_id):
+        descr = f"MCP_INTTEST_{unique_id}"
+        create_data = {'name': '', 'ipprotocol': 'inet', 'interface': 'wan', 'gateway': '198.51.100.254'}
+        hex8 = uuid.uuid4().hex[:8]
+        create_data["name"] = f"mcpt_{hex8}"
+        lookup_val = create_data["name"]
+        item_id = None
+        try:
+            result = await api_client.create_routing_gateway(
+                create_data, ControlParameters(apply=True),
+            )
+            item_id = result["data"]["id"]
+            assert item_id is not None
+
+            # Re-lookup (IDs may shift after apply)
+            obj = await _find_by_field(
+                api_client, "/routing/gateways", "name", lookup_val,
+            )
+            assert obj is not None
+            item_id = obj["id"]
+
+            # Update
+            await api_client.update_routing_gateway(
+                item_id, {'descr': 'Updated gateway'}, ControlParameters(apply=True),
+            )
+
+        finally:
+            # Cleanup — re-lookup since IDs shift
+            obj = await _find_by_field(
+                api_client, "/routing/gateways", "name", lookup_val,
+            )
+            if obj is not None:
+                try:
+                    await api_client.delete_routing_gateway(obj["id"])
+                except Exception:
+                    pass
+
+
+class TestRoutingGatewayDefaultReadOnly:
+    """Read-only tests for default routing gateway."""
+
+    async def test_get_routing_gateway_default(self, api_client):
+        result = await api_client.get_routing_gateway_default()
+        assert "data" in result
+
+
+class TestRoutingGatewayGroupReadOnly:
+    """Read-only tests for routing gateway group."""
+
+    async def test_get_routing_gateway_groups(self, api_client):
+        result = await api_client.get_routing_gateway_groups()
+        assert "data" in result
+
+
+class TestRoutingGatewayGroupLifecycle:
+    """CRUD lifecycle test for routing gateway group."""
+
+    async def test_crud_lifecycle(self, api_client, unique_id):
+        descr = f"MCP_INTTEST_{unique_id}"
+        create_data = {'name': '', 'trigger': 'down', 'descr': '', 'ipprotocol': 'inet', 'priorities': []}
+        hex8 = uuid.uuid4().hex[:8]
+        create_data["name"] = f"mcpt_{hex8}"
+        lookup_val = create_data["name"]
+        item_id = None
+        try:
+            result = await api_client.create_routing_gateway_group(
+                create_data, ControlParameters(apply=True),
+            )
+            item_id = result["data"]["id"]
+            assert item_id is not None
+
+            # Re-lookup (IDs may shift after apply)
+            obj = await _find_by_field(
+                api_client, "/routing/gateway/groups", "name", lookup_val,
+            )
+            assert obj is not None
+            item_id = obj["id"]
+
+            # Update
+            await api_client.update_routing_gateway_group(
+                item_id, {'descr': 'Updated gateway group'}, ControlParameters(apply=True),
+            )
+
+        finally:
+            # Cleanup — re-lookup since IDs shift
+            obj = await _find_by_field(
+                api_client, "/routing/gateway/groups", "name", lookup_val,
+            )
+            if obj is not None:
+                try:
+                    await api_client.delete_routing_gateway_group(obj["id"])
+                except Exception:
+                    pass
+
+
+class TestRoutingGatewayGroupPriorityReadOnly:
+    """Read-only tests for routing gateway group priority."""
+
+    async def test_get_routing_gateway_group_prioritys(self, api_client):
+        result = await api_client.get_routing_gateway_group_prioritys()
+        assert "data" in result
+
+
+class TestRoutingStaticRouteReadOnly:
+    """Read-only tests for static route."""
+
+    async def test_get_routing_static_routes(self, api_client):
+        result = await api_client.get_routing_static_routes()
+        assert "data" in result
+
+
+class TestRoutingStaticRouteLifecycle:
+    """CRUD lifecycle test for static route."""
+
+    async def test_crud_lifecycle(self, api_client, unique_id):
+        descr = f"MCP_INTTEST_{unique_id}"
+        create_data = {'network': '10.99.99.0/24', 'gateway': 'WAN_DHCP'}
+        create_data["descr"] = descr
+        lookup_val = descr
+        item_id = None
+        try:
+            result = await api_client.create_routing_static_route(
+                create_data, ControlParameters(apply=True),
+            )
+            item_id = result["data"]["id"]
+            assert item_id is not None
+
+            # Re-lookup (IDs may shift after apply)
+            obj = await _find_by_field(
+                api_client, "/routing/static_routes", "descr", lookup_val,
+            )
+            assert obj is not None
+            item_id = obj["id"]
+
+            # Update
+            await api_client.update_routing_static_route(
+                item_id, {'descr': 'Updated route'}, ControlParameters(apply=True),
+            )
+
+        finally:
+            # Cleanup — re-lookup since IDs shift
+            obj = await _find_by_field(
+                api_client, "/routing/static_routes", "descr", lookup_val,
+            )
+            if obj is not None:
+                try:
+                    await api_client.delete_routing_static_route(obj["id"])
+                except Exception:
+                    pass
+
+
+class TestRoutingApplyReadOnly:
+    """Read-only tests for routing apply."""
+
+    async def test_get_routing_apply_status(self, api_client):
+        result = await api_client.get_routing_apply_status()
+        assert "data" in result

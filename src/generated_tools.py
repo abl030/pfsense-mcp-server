@@ -753,3 +753,287 @@ def register_generated_tools(mcp, get_api_client):
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def list_routing_gateways(page: int = 1, page_size: int = 20) -> Dict:
+        """List routing gateways with pagination."""
+        client = get_api_client()
+        try:
+            result = await client.get_routing_gateways(
+                pagination=create_pagination(page, page_size),
+            )
+            return {
+                "success": True,
+                "data": result.get("data", []),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def create_routing_gateway(data: Dict, apply_immediately: bool = True) -> Dict:
+        """Create a routing gateway."""
+        client = get_api_client()
+        try:
+            from pfsense_api_enhanced import ControlParameters
+            control = ControlParameters(apply=apply_immediately)
+            result = await client.create_routing_gateway(data, control)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def update_routing_gateway(item_id: int, updates: Dict, apply_immediately: bool = True) -> Dict:
+        """Update a routing gateway."""
+        client = get_api_client()
+        try:
+            from pfsense_api_enhanced import ControlParameters
+            control = ControlParameters(apply=apply_immediately)
+            result = await client.update_routing_gateway(item_id, updates, control)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def delete_routing_gateway(item_id: int, apply_immediately: bool = True) -> Dict:
+        """Delete a routing gateway."""
+        client = get_api_client()
+        try:
+            result = await client.delete_routing_gateway(item_id, apply_immediately)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def get_routing_gateway_default() -> Dict:
+        """Get default routing gateway."""
+        client = get_api_client()
+        try:
+            result = await client.get_routing_gateway_default()
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def update_routing_gateway_default(updates: Dict) -> Dict:
+        """Update default routing gateway."""
+        client = get_api_client()
+        try:
+            result = await client.update_routing_gateway_default(updates)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def list_routing_gateway_groups(page: int = 1, page_size: int = 20) -> Dict:
+        """List routing gateway groups with pagination."""
+        client = get_api_client()
+        try:
+            result = await client.get_routing_gateway_groups(
+                pagination=create_pagination(page, page_size),
+            )
+            return {
+                "success": True,
+                "data": result.get("data", []),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def create_routing_gateway_group(data: Dict, apply_immediately: bool = True) -> Dict:
+        """Create a routing gateway group."""
+        client = get_api_client()
+        try:
+            from pfsense_api_enhanced import ControlParameters
+            control = ControlParameters(apply=apply_immediately)
+            result = await client.create_routing_gateway_group(data, control)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def update_routing_gateway_group(item_id: int, updates: Dict, apply_immediately: bool = True) -> Dict:
+        """Update a routing gateway group."""
+        client = get_api_client()
+        try:
+            from pfsense_api_enhanced import ControlParameters
+            control = ControlParameters(apply=apply_immediately)
+            result = await client.update_routing_gateway_group(item_id, updates, control)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def delete_routing_gateway_group(item_id: int, apply_immediately: bool = True) -> Dict:
+        """Delete a routing gateway group."""
+        client = get_api_client()
+        try:
+            result = await client.delete_routing_gateway_group(item_id, apply_immediately)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def list_routing_gateway_group_prioritys(page: int = 1, page_size: int = 20) -> Dict:
+        """List routing gateway group prioritys with pagination."""
+        client = get_api_client()
+        try:
+            result = await client.get_routing_gateway_group_prioritys(
+                pagination=create_pagination(page, page_size),
+            )
+            return {
+                "success": True,
+                "data": result.get("data", []),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def create_routing_gateway_group_priority(data: Dict, apply_immediately: bool = True) -> Dict:
+        """Create a routing gateway group priority."""
+        client = get_api_client()
+        try:
+            from pfsense_api_enhanced import ControlParameters
+            control = ControlParameters(apply=apply_immediately)
+            result = await client.create_routing_gateway_group_priority(data, control)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def update_routing_gateway_group_priority(item_id: int, updates: Dict, apply_immediately: bool = True) -> Dict:
+        """Update a routing gateway group priority."""
+        client = get_api_client()
+        try:
+            from pfsense_api_enhanced import ControlParameters
+            control = ControlParameters(apply=apply_immediately)
+            result = await client.update_routing_gateway_group_priority(item_id, updates, control)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def delete_routing_gateway_group_priority(item_id: int, apply_immediately: bool = True) -> Dict:
+        """Delete a routing gateway group priority."""
+        client = get_api_client()
+        try:
+            result = await client.delete_routing_gateway_group_priority(item_id, apply_immediately)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def list_routing_static_routes(page: int = 1, page_size: int = 20) -> Dict:
+        """List static routes with pagination."""
+        client = get_api_client()
+        try:
+            result = await client.get_routing_static_routes(
+                pagination=create_pagination(page, page_size),
+            )
+            return {
+                "success": True,
+                "data": result.get("data", []),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def create_routing_static_route(data: Dict, apply_immediately: bool = True) -> Dict:
+        """Create a static route."""
+        client = get_api_client()
+        try:
+            from pfsense_api_enhanced import ControlParameters
+            control = ControlParameters(apply=apply_immediately)
+            result = await client.create_routing_static_route(data, control)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def update_routing_static_route(item_id: int, updates: Dict, apply_immediately: bool = True) -> Dict:
+        """Update a static route."""
+        client = get_api_client()
+        try:
+            from pfsense_api_enhanced import ControlParameters
+            control = ControlParameters(apply=apply_immediately)
+            result = await client.update_routing_static_route(item_id, updates, control)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def delete_routing_static_route(item_id: int, apply_immediately: bool = True) -> Dict:
+        """Delete a static route."""
+        client = get_api_client()
+        try:
+            result = await client.delete_routing_static_route(item_id, apply_immediately)
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def get_routing_apply_status() -> Dict:
+        """Get routing apply status."""
+        client = get_api_client()
+        try:
+            result = await client.get_routing_apply_status()
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    @mcp.tool()
+    async def apply_routing_apply() -> Dict:
+        """Trigger routing apply."""
+        client = get_api_client()
+        try:
+            result = await client.apply_routing_apply()
+            return {
+                "success": True,
+                "data": result.get("data", result),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
