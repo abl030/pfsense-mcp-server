@@ -61,8 +61,7 @@ VERSION = "4.0.0"
 # Initialize FastMCP server
 mcp = FastMCP(
     "pfSense Enhanced MCP Server",
-    version=VERSION,
-    description="Advanced pfSense management with filtering, sorting, and HATEOAS support"
+    instructions="Advanced pfSense management with filtering, sorting, and HATEOAS support"
 )
 
 # Global API client
