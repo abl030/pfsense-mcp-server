@@ -355,8 +355,8 @@ class EnhancedPfSenseAPIClient:
         """Enable a firewall rule"""
         control = ControlParameters(apply=apply_immediately)
         return await self._make_request(
-            "PATCH", f"/firewall/rule/{rule_id}",
-            data={"disabled": False},
+            "PATCH", "/firewall/rule",
+            data={"id": rule_id, "disabled": False},
             control=control
         )
 
@@ -368,11 +368,11 @@ class EnhancedPfSenseAPIClient:
         """Disable a firewall rule"""
         control = ControlParameters(apply=apply_immediately)
         return await self._make_request(
-            "PATCH", f"/firewall/rule/{rule_id}",
-            data={"disabled": True},
+            "PATCH", "/firewall/rule",
+            data={"id": rule_id, "disabled": True},
             control=control
         )
-    
+
     async def update_firewall_rule(
         self,
         rule_id: int,
@@ -382,12 +382,12 @@ class EnhancedPfSenseAPIClient:
         """Update firewall rule with control parameters"""
         if not control:
             control = ControlParameters(apply=True)
-        
+
         return await self._make_request(
-            "PATCH", f"/firewall/rule/{rule_id}",
-            data=updates, control=control
+            "PATCH", "/firewall/rule",
+            data={"id": rule_id, **updates}, control=control
         )
-    
+
     async def move_firewall_rule(
         self,
         rule_id: int,
@@ -399,10 +399,10 @@ class EnhancedPfSenseAPIClient:
             placement=new_position,
             apply=apply_immediately
         )
-        
+
         return await self._make_request(
-            "PATCH", f"/firewall/rule/{rule_id}",
-            data={}, control=control
+            "PATCH", "/firewall/rule",
+            data={"id": rule_id}, control=control
         )
     
     async def delete_firewall_rule(
@@ -476,8 +476,8 @@ class EnhancedPfSenseAPIClient:
             control = ControlParameters(apply=True)
 
         return await self._make_request(
-            "PATCH", f"/firewall/nat/port_forward/{port_forward_id}",
-            data=updates, control=control
+            "PATCH", "/firewall/nat/port_forward",
+            data={"id": port_forward_id, **updates}, control=control
         )
 
     async def delete_nat_port_forward(

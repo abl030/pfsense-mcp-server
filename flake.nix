@@ -18,6 +18,7 @@
             httpx
             python-dotenv
             pytest
+            pytest-asyncio
           ]))
         ];
 
