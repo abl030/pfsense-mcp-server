@@ -11,8 +11,8 @@ import json
 from datetime import datetime
 from typing import Dict, List, Any
 
-# Add current directory to Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add src directory to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
 from pfsense_api_enhanced import (
     EnhancedPfSenseAPIClient,

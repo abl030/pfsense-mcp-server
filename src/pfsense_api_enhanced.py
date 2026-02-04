@@ -5,10 +5,7 @@ Implements advanced features: Object IDs, Queries/Filters, HATEOAS, Control Para
 Compatible with jaredhendrickson13/pfsense-api package
 """
 
-import os
-import json
 import base64
-import re
 from typing import Dict, List, Optional, Any, Union
 from enum import Enum
 from dataclasses import dataclass
@@ -120,7 +117,7 @@ class EnhancedPfSenseAPIClient:
         self.verify_ssl = verify_ssl
         self.timeout = timeout
         self.version = version
-        self.enable_hateoas = enable_hateoas
+        self.hateoas_enabled = enable_hateoas
         self.jwt_token = None
         self.jwt_expiry = None
         
@@ -209,7 +206,7 @@ class EnhancedPfSenseAPIClient:
             params.update(control.to_params())
         
         # Add HATEOAS
-        if self.enable_hateoas:
+        if self.hateoas_enabled:
             params["hateoas"] = "true"
         
         # Add extra parameters
@@ -747,12 +744,12 @@ class EnhancedPfSenseAPIClient:
     
     async def enable_hateoas(self) -> Dict:
         """Enable HATEOAS for this session"""
-        self.enable_hateoas = True
+        self.hateoas_enabled = True
         return {"message": "HATEOAS enabled for this session"}
     
     async def disable_hateoas(self) -> Dict:
         """Disable HATEOAS for this session"""
-        self.enable_hateoas = False
+        self.hateoas_enabled = False
         return {"message": "HATEOAS disabled for this session"}
     
     async def close(self):

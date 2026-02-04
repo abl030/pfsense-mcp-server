@@ -682,7 +682,7 @@ async def update_nat_port_forward(
     if target_port is not None:
         updates["local_port"] = target_port
     if destination_port is not None:
-        updates["dstport"] = destination_port
+        updates["destination_port"] = destination_port
     if description is not None:
         updates["descr"] = description
     if disabled is not None:
@@ -1274,7 +1274,7 @@ async def get_api_capabilities() -> Dict:
                 "queries_filters": "Full support with multiple operators",
                 "sorting": "Multi-field sorting supported",
                 "pagination": "Limit/offset based",
-                "hateoas": f"{'Enabled' if client.enable_hateoas else 'Disabled'}",
+                "hateoas": f"{'Enabled' if client.hateoas_enabled else 'Disabled'}",
                 "control_parameters": "Apply, async, placement, append, remove"
             },
             "links": client.extract_links(capabilities),
@@ -1323,7 +1323,7 @@ async def test_enhanced_connection() -> Dict:
             tests.append({"feature": "sorting", "status": "failed", "error": str(e)})
         
         # Test HATEOAS if enabled
-        if client.enable_hateoas:
+        if client.hateoas_enabled:
             try:
                 result = await client.get_system_status()
                 links = client.extract_links(result)
@@ -1341,7 +1341,7 @@ async def test_enhanced_connection() -> Dict:
             "message": f"Enhanced connection test completed - {working_features}/{len(tests)} features working",
             "basic_connection": True,
             "feature_tests": tests,
-            "hateoas_enabled": client.enable_hateoas,
+            "hateoas_enabled": client.hateoas_enabled,
             "timestamp": datetime.utcnow().isoformat()
         }
     except Exception as e:

@@ -217,24 +217,23 @@ class TestHATEOASNavigation:
     """Tests for HATEOAS toggle and link following."""
 
     async def test_enable_disable_hateoas(self, api_client):
-        # enable_hateoas() is a method that replaces itself with a bool,
-        # so set the attribute directly.
-        api_client.enable_hateoas = True
-        assert api_client.enable_hateoas is True
-        api_client.enable_hateoas = False
-        assert api_client.enable_hateoas is False
+        # hateoas_enabled is the bool attribute; enable_hateoas() is the method.
+        api_client.hateoas_enabled = True
+        assert api_client.hateoas_enabled is True
+        api_client.hateoas_enabled = False
+        assert api_client.hateoas_enabled is False
 
     async def test_extract_links(self, api_client):
-        api_client.enable_hateoas = True
+        api_client.hateoas_enabled = True
         try:
             result = await api_client.get_system_status()
             links = api_client.extract_links(result)
             assert isinstance(links, dict)
         finally:
-            api_client.enable_hateoas = False
+            api_client.hateoas_enabled = False
 
     async def test_follow_link(self, api_client):
-        api_client.enable_hateoas = True
+        api_client.hateoas_enabled = True
         try:
             result = await api_client.get_system_status()
             links = api_client.extract_links(result)
@@ -245,7 +244,7 @@ class TestHATEOASNavigation:
             followed = await api_client.follow_link(first_link)
             assert isinstance(followed, dict)
         finally:
-            api_client.enable_hateoas = False
+            api_client.hateoas_enabled = False
 
 
 # ---------------------------------------------------------------------------
