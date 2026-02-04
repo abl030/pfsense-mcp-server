@@ -142,12 +142,32 @@ The flake.nix shellHook exports `PFSENSE_URL` from `PFSENSE_HOST`.
 
 ### Core Components
 
-- **`src/main.py`** - MCP tools (FastMCP `@mcp.tool()` decorators)
-- **`src/pfsense_api_enhanced.py`** - HTTP client
+- **`src/main.py`** - Hand-written MCP tools (FastMCP `@mcp.tool()` decorators) + imports generated tools
+- **`src/pfsense_api_enhanced.py`** - HTTP client (inherits `GeneratedFirewallMixin`)
   - `_make_request()` ~line 220 - central request handler
   - Check here first for HTTP/format issues
+- **`src/generated_client.py`** - **Generated** — 288 async client methods (mixin class). Do not hand-edit.
+- **`src/generated_tools.py`** - **Generated** — 288 MCP tool registrations. Do not hand-edit.
+- **`scripts/generate_from_spec.py`** - Code generator. Fix this, then re-run, to change generated output.
 - **`openapi/pfsense-api-v2.json`** - API spec (source of truth for field names)
-- **`tests/test_openapi_validation.py`** - Validates implementation vs spec
+- **`tests/test_integration.py`** - Hand-written integration tests
+- **`tests/test_generated_integration.py`** - **Generated** — 131 test classes. Do not hand-edit.
+- **`tests/conftest.py`** - Shared fixtures (`api_client`, `unique_id`, `_find_by_field`)
+
+### Generated Code Workflow
+
+Generated files (`src/generated_client.py`, `src/generated_tools.py`, `tests/test_generated_integration.py`) are build artifacts. **Never hand-edit them.** To fix bugs or add endpoints:
+
+```bash
+# 1. Edit the generator
+vim scripts/generate_from_spec.py
+
+# 2. Re-run it
+nix develop --command python scripts/generate_from_spec.py
+
+# 3. Test
+nix develop --command pytest tests/test_generated_integration.py -v -k "not Lifecycle"
+```
 
 ### Endpoint Patterns
 
@@ -160,14 +180,37 @@ The flake.nix shellHook exports `PFSENSE_URL` from `PFSENSE_HOST`.
 
 Same pattern for `/firewall/alias`, `/firewall/nat/port_forward`, etc.
 
+## pfSense API v2 Learnings
+
+Beyond the quirks listed above, these were discovered during code generation:
+
+1. **Nested resources sometimes require parent_id even for GET listing** — `/system/crl/revoked_certificate` returns 400 without a `parent_id`. Most other nested resources (schedule/time_range, limiter/queue) don't require it for listing.
+
+2. **IDs shift after apply** — Creating a rule with `apply=True` may change the IDs of other rules. Always re-lookup by description/name field after create before doing updates or deletes.
+
+3. **POST-only action endpoints exist** — `/services/wake_on_lan/send` has POST but no GET. The generator skips read-only tests for these.
+
+4. **Some plural paths don't follow the convention** — Most endpoints use `singular` + `s` for plural, but some (like settings endpoints) use the same path for both GET-list and GET-single.
+
+5. **`interface` field type varies per schema** — FirewallRule uses array `["lan"]`, PortForward uses string `"lan"`, some schemas use neither. Always check the OpenAPI spec for each specific schema.
+
 ## Commands
 
 ```bash
 # Dev environment
 nix develop
 
-# Run tests
-nix develop --command pytest tests/ -v
+# Run all tests (excluding stale enhanced features tests)
+nix develop --command pytest tests/ -v --ignore=tests/test_enhanced_features.py
+
+# Run only hand-written integration tests
+nix develop --command pytest tests/test_integration.py -v
+
+# Run generated read-only tests (safe)
+nix develop --command pytest tests/test_generated_integration.py -v -k "not Lifecycle"
+
+# Regenerate from spec
+nix develop --command python scripts/generate_from_spec.py
 
 # Run MCP server
 MCP_MODE=stdio python -m src.main
